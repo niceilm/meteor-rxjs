@@ -1,4 +1,3 @@
-/// <reference types="zone.js" />
 import { Observable } from 'rxjs';
 export declare function zone<T>(zone?: Zone): Observable<T>;
 export interface ZoneSignature<T> {

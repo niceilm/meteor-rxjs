@@ -69,8 +69,7 @@ var ObservableCursor = (function (_super) {
      * @param {Mongo.Cursor<T>} cursor - The Mongo.Cursor to wrap.
      */
     function ObservableCursor(cursor) {
-        var _this = this;
-        _super.call(this, function (observer) {
+        var _this = _super.call(this, function (observer) {
             if (_this._isDataInitinialized) {
                 observer.next(_this._data);
             }
@@ -81,14 +80,15 @@ var ObservableCursor = (function (_super) {
             return function () {
                 removeObserver(_this._observers, observer, function () { return _this.stop(); });
             };
-        });
-        this._data = [];
-        this._observers = [];
-        this._countObserver = new rxjs.Subject();
-        this._isDataInitinialized = false;
-        _.extend(this, _.omit(cursor, 'count', 'map'));
-        this._cursor = cursor;
-        this._zone = forkZone();
+        }) || this;
+        _this._data = [];
+        _this._observers = [];
+        _this._countObserver = new rxjs.Subject();
+        _this._isDataInitinialized = false;
+        _.extend(_this, _.omit(cursor, 'count', 'map'));
+        _this._cursor = cursor;
+        _this._zone = forkZone();
+        return _this;
     }
     /**
      *  Static method which creates an ObservableCursor from Mongo.Cursor.
@@ -474,25 +474,33 @@ function throwInvalidCallback(method) {
     throw new Error("Invalid " + method + " arguments:\n     your last param can't be a callback function, \n     please remove it and use \".subscribe\" of the Observable!");
 }
 /**
- * A class with static methods, which wraps Meteor's API and returns
- * RxJS Observable as return value for all Meteor's API.
- * The method's signature is the same as Metoer's, except you don't
- * need to provide callbacks, and you need to "subscribe" instead.
- * The functionality that wrapped in this implementation is Meteor.call,
- * Meteor.autorun and Meteor.subscribe.
- *
+ * This is a class with static methods that wrap Meteor's API and return RxJS
+ * Observables. The methods' signatures are the same as Meteor's, with the ]
+ * exception that the callbacks are handled by Meteor-rxjs. Instead of
+ * providing callbacks, you need to subscribe to the observables that are
+ * returned. The methods that are wrapped in MeteorObservable are
+ * [Meteor.call](https://docs.meteor.com/api/methods.html#Meteor-call),
+ * [Meteor.autorun](https://docs.meteor.com/api/tracker.html#Tracker-autorun)
+ * and [Meteor.subscribe](https://docs.meteor.com/api/pubsub.html#Meteor-subscribe).
  */
 var MeteorObservable = (function () {
     function MeteorObservable() {
     }
     /**
-     *  Method has the same notation as Meteor.call, only without the callbacks:
+     * Invokes a [Meteor Method](https://docs.meteor.com/api/methods.html)
+     * defined on the server, passing any number of arguments. This method has
+     * the same signature as
+     * [Meteor.call](https://docs.meteor.com/api/methods.html#Meteor-call), only
+     * without the callbacks:
      *    MeteorObservable.call(name, [...args])
      *
-     *  @param {String} name - Name of the method in the Meteor server
+     *
+     *  @param {string} name - Name of the method in the Meteor server
      *  @param {any} args - Parameters that will be forwarded to the method.
      *   after the func call to initiate change detection.
-     *  @returns {Observable<T>} - RxJS Observable, which completes when the server return a response.
+     *  @returns {Observable<T>} - RxJS Observable, which completes when the
+     *  server returns a response.
+     *
      *  @example <caption>Example using Angular2 Component</caption>
      *  class MyComponent  {
      *     constructor() {
@@ -531,16 +539,21 @@ var MeteorObservable = (function () {
         });
     };
     /**
-     *  Method has the same notation as Meteor.subscribe, only without the callbacks:
+     * When you subscribe to a collection, it tells the server to send records to
+     * the client. This method has the same signature as
+     * [Meteor.subscribe](https://docs.meteor.com/api/pubsub.html#Meteor-subscribe),
+     * except without the callbacks again:
      *    subscribe(name, [...args])
      *
-     *  You can use this method from any Angular2 element - such as Component, Pipe or
-     *  Service.
+     *  You can use this method from any Angular2 element - such as Component,
+     *  Pipe or Service.
      *
-     *  @param {String} name - Name of the publication in the Meteor server
+     *  @param {string} name - Name of the publication in the Meteor server
      *  @param {any} args - Parameters that will be forwarded to the publication.
      *   after the func call to initiate change detection.
-     *  @returns {Observable} - RxJS Observable, which completes when the subscription is ready.
+     *  @returns {Observable} - RxJS Observable, which completes when the
+     *  subscription is ready.
+     *
      *  @example <caption>Example using Angular2 Service</caption>
      *  class MyService {
      *     private meteorSubscription: Observable<any>;
@@ -620,7 +633,10 @@ var MeteorObservable = (function () {
         });
     };
     /**
-     *  Method has the same notation as Meteor.autorun, only without the callback:
+     * Allows you to run a function every time there is a change is a reactive
+     * data sources. This method has the same signature as
+     * [Meteor.autorun](https://docs.meteor.com/api/tracker.html#Tracker-autorun),
+     * only without the callback:
      *    MeteorObservable.autorun()
      *
      *  @returns {Observable<T>} - RxJS Observable, which trigger the subscription callback
@@ -683,8 +699,9 @@ var ZoneOperator = (function () {
 var ZoneSubscriber = (function (_super) {
     __extends$1(ZoneSubscriber, _super);
     function ZoneSubscriber(destination, zone) {
-        _super.call(this, destination);
-        this.zone = zone;
+        var _this = _super.call(this, destination) || this;
+        _this.zone = zone;
+        return _this;
     }
     ZoneSubscriber.prototype._next = function (value) {
         var _this = this;

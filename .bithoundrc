@@ -21,12 +21,20 @@
     "dependencies": {
       "mute": [
         "rxjs",
+        "zone.js",
         "jsdoc-to-markdown"
       ],
       "unused-ignores": [
+        "tslint",
+        "validate-commit-msg",
+        "typescript",
+        "rollup",
+        "ghooks",
+        "es6-shim",
+        "conventional-changelog",
+        "conventional-changelog-cli",
         "zone.js",
         "reflect-metadata",
-        "meteor-typings",
         "@types/*"
       ]
     }
